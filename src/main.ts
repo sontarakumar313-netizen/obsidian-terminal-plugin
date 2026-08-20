@@ -3,6 +3,7 @@ import { join } from 'path';
 
 import { FileSystemAdapter, Notice, Plugin } from 'obsidian';
 
+import { TerminalCommandMenu } from './command-menu';
 import { resolveCommandManager } from './command-manager';
 import { buildLaunchCommand, getPlatformSummary, type LaunchCommand } from './launcher';
 import { logger } from './logger';
@@ -25,7 +26,20 @@ export default class TerminalCommandsPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
     this.addSettingTab(new TerminalCommandsSettingTab(this.app, this));
+    this.addRibbonIcon('terminal', 'Terminal commands', () => {
+      this.openCommandMenu();
+    });
     this.refreshCommands();
+  }
+
+  private openCommandMenu(): void {
+    const menu = new TerminalCommandMenu(this.app, buildLaunchTargets(this.settings), (target) => {
+      this.runLaunchCommand(
+        () => this.composeLaunchCommand(target.toolCommand, target.workingDirectory),
+        target.commandName
+      );
+    });
+    menu.open();
   }
 
   refreshCommands() {

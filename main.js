@@ -38,6 +38,43 @@ typeof SuppressedError === "function" ? SuppressedError : function (error, suppr
     return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 };
 
+const getWorkingDirectoryLabel = (workingDirectory) => workingDirectory === 'current-note' ? 'Active note folder' : 'Vault folder';
+const getCommandDetails = (target) => {
+    var _a;
+    const command = (_a = target.toolCommand) !== null && _a !== void 0 ? _a : 'Open terminal';
+    return `(${getWorkingDirectoryLabel(target.workingDirectory)}) ${command}`;
+};
+class TerminalCommandMenu extends obsidian.FuzzySuggestModal {
+    constructor(app, targets, onChoose) {
+        super(app);
+        this.targets = targets;
+        this.onChoose = onChoose;
+        this.setPlaceholder('Search commands…');
+        this.setInstructions([
+            { command: '↑↓', purpose: 'to navigate' },
+            { command: '↵', purpose: 'to run' },
+            { command: 'esc', purpose: 'to dismiss' }
+        ]);
+    }
+    getItems() {
+        return [...this.targets];
+    }
+    getItemText(target) {
+        return `${target.commandName} ${getCommandDetails(target)}`;
+    }
+    renderSuggestion(match, el) {
+        const target = match.item;
+        const details = getCommandDetails(target);
+        el.addClass('terminal-commands-menu-item');
+        el.createDiv({ cls: 'terminal-commands-menu-name', text: target.commandName });
+        const detailsEl = el.createDiv({ cls: 'terminal-commands-menu-details', text: details });
+        detailsEl.setAttr('title', details);
+    }
+    onChooseItem(target) {
+        this.onChoose(target);
+    }
+}
+
 const resolveCommandManager = (app) => {
     const maybeCommands = app.commands;
     if (maybeCommands &&
@@ -829,8 +866,17 @@ class TerminalCommandsPlugin extends obsidian.Plugin {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.loadSettings();
             this.addSettingTab(new TerminalCommandsSettingTab(this.app, this));
+            this.addRibbonIcon('terminal', 'Terminal commands', () => {
+                this.openCommandMenu();
+            });
             this.refreshCommands();
         });
+    }
+    openCommandMenu() {
+        const menu = new TerminalCommandMenu(this.app, buildLaunchTargets(this.settings), (target) => {
+            this.runLaunchCommand(() => this.composeLaunchCommand(target.toolCommand, target.workingDirectory), target.commandName);
+        });
+        menu.open();
     }
     refreshCommands() {
         const commandManager = resolveCommandManager(this.app);

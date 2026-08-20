@@ -115,3 +115,28 @@
   border-radius: 999px;
   box-shadow: 0 0 8px var(--interactive-accent);
 }
+
+.terminal-commands-menu-item {
+  display: block;
+  min-width: 0;
+}
+
+.terminal-commands-menu-name {
+  overflow: hidden;
+  color: var(--text-normal);
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-medium);
+  line-height: var(--line-height-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.terminal-commands-menu-details {
+  overflow: hidden;
+  margin-top: var(--size-2-1);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  line-height: var(--line-height-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
