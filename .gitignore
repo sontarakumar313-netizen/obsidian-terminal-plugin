@@ -1,0 +1,5 @@
+.obsidian/
+node_modules/
+00-refs/
+AGENTS.md
+main.js.map
